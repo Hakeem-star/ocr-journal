@@ -1,9 +1,18 @@
 from flask import Flask, request
 from werkzeug.datastructures import FileStorage
 import pytesseract
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
 
+from utils.gpt import get_ai_summary
 
+load_dotenv()
 app = Flask(__name__)
+
+client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
 
 
 @app.post("/generate-text")
@@ -20,7 +29,8 @@ def generate_text():
     text = pytesseract.image_to_string(image_file)
     print(text)
 
-    return "Thank you come again!"
+    summary = get_ai_summary(client, text)
+    return summary
 
 
 # $ curl -F "image=@./assets/testocr.png" http://127.0.0.1:5000/generate-text
