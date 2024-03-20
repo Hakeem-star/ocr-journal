@@ -37,8 +37,4 @@ def create_app(test_config=None):
 
     ai_actions(app)
 
-    from .authentication.authentication import authentication
-
-    authentication(app)
-
     return app
