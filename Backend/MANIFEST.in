@@ -1,0 +1,2 @@
+include flaskr/flaskr.sqlite
+global-exclude *.pyc
