@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, json, jsonify, make_response, request
 from werkzeug.datastructures import FileStorage
 import pytesseract
 from openai import OpenAI
@@ -14,9 +14,19 @@ client = OpenAI(
 
 def ai_actions(app: Flask):
 
-    @app.post("/generate-text")
+    @app.route("/generate-text", methods=["POST", "OPTIONS"])
     def generate_text():
-        f: FileStorage = request.files["image"]
+        # Cors for local dev
+        # print(request.form.get("file"))
+        if request.method == "OPTIONS":  # CORS preflight
+            response = make_response()
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            response.headers.add("Access-Control-Allow-Headers", "*")
+            response.headers.add("Access-Control-Allow-Methods", "*")
+            return response
+
+        print(request.files)
+        f: FileStorage = request.files["file"]
         print(f.filename)
         image_file = "./assets/testocr_1.png"
         f.save(image_file)
@@ -32,7 +42,8 @@ def ai_actions(app: Flask):
         return summary
 
     def get_ai_summary(client: OpenAI, text: str):
-        response = client.chat.completions.create(
+
+        chat_response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
@@ -43,4 +54,18 @@ def ai_actions(app: Flask):
             ],
         )
 
-        return response.choices[0].message.content or "No summary generated"
+        response = make_response(
+            jsonify(
+                {
+                    "aiResponse": chat_response.choices[0].message.content
+                    or "No summary generated",
+                    "rawResponse": text,
+                }
+            )
+        )
+        # chat_response.choices[0].message.content or "No summary generated"
+
+        # Cors for local dev
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
