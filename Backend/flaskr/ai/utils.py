@@ -63,7 +63,6 @@ def ai_actions(app: Flask):
                 }
             )
         )
-        # chat_response.choices[0].message.content or "No summary generated"
 
         # Cors for local dev
         response.headers.add("Access-Control-Allow-Origin", "*")
